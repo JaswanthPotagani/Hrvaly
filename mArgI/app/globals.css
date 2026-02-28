@@ -1,0 +1,144 @@
+@import "tailwindcss";
+/* Neon Orange Theme */
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius: 0.5rem;
+}
+
+:root {
+  /* Light Mode */
+  --background: oklch(1 0 0);       /* Pure White */
+  --foreground: oklch(0.10 0 0);    /* Almost Black */
+  
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.10 0 0);
+  
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.10 0 0);
+  
+  /* NEON ORANGE */
+  --primary: oklch(0.65 0.22 35); 
+  --primary-foreground: oklch(1 0 0); /* White text on orange */
+  
+  --secondary: oklch(0.96 0 0);
+  --secondary-foreground: oklch(0.10 0 0);
+  
+  --muted: oklch(0.96 0 0);
+  --muted-foreground: oklch(0.55 0 0);
+  
+  --accent: oklch(0.96 0 0);
+  --accent-foreground: oklch(0.10 0 0);
+  
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.98 0 0);
+  
+  --border: oklch(0.92 0 0);
+  --input: oklch(0.92 0 0);
+  --ring: oklch(0.65 0.22 35); /* Orange Ring */
+}
+
+.dark {
+  /* Dark Mode - Deep Black & Neon Orange */
+  --background: oklch(0.05 0.01 240); /* Deepest Black/Blue */
+  --foreground: oklch(1 0 0);         /* Pure White */
+  
+  --card: oklch(0.10 0 0);            /* Dark Card */
+  --card-foreground: oklch(1 0 0);
+  
+  --popover: oklch(0.10 0 0);
+  --popover-foreground: oklch(1 0 0);
+  
+  /* NEON ORANGE */
+  --primary: oklch(0.65 0.22 35);     /* Bright Neon Orange */
+  --primary-foreground: oklch(1 0 0);
+  
+  --secondary: oklch(0.20 0 0);
+  --secondary-foreground: oklch(1 0 0);
+  
+  --muted: oklch(0.15 0 0);
+  --muted-foreground: oklch(0.70 0 0);
+  
+  --accent: oklch(0.20 0 0);
+  --accent-foreground: oklch(1 0 0);
+  
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.98 0 0);
+  
+  --border: oklch(0.20 0 0);
+  --input: oklch(0.20 0 0);
+  --ring: oklch(0.65 0.22 35); /* Orange Ring */
+}
+
+@layer utilities {
+  .gradient-title {
+    @apply bg-gradient-to-r from-white via-orange-400 to-orange-600 font-extrabold tracking-tighter text-transparent bg-clip-text pb-2 pr-2;
+  }
+  
+  .animate-gradient-x {
+    background-size: 200% 200%;
+    animation: gradient-x 15s ease infinite;
+  }
+
+  /* Fade In Up Animation */
+  .animate-fadeInUp {
+    animation: fadeInUp 0.8s ease-out forwards;
+    opacity: 0;
+  }
+
+  /* Animation Delays */
+  .delay-100 {
+    animation-delay: 0.1s;
+  }
+
+  .delay-200 {
+    animation-delay: 0.2s;
+  }
+
+  .delay-300 {
+    animation-delay: 0.3s;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html, body {
+    @apply bg-background text-foreground;
+    overflow-y: auto !important;
+    overflow-x: hidden;
+  }
+}

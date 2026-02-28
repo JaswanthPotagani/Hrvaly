@@ -1,0 +1,336 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                     String              @id @default(uuid())
+  email                  String              @unique
+  name                   String?
+  imageUrl               String?
+  industry               String?
+  specialization         String?
+  createdAt              DateTime            @default(now())
+  updatedAt              DateTime            @updatedAt
+  bio                    String?
+  experience             Int?
+  skills                 String[]
+  branch                 String?
+  college                String?
+  currentPeriodEnd       DateTime?
+  currentYear            Int?
+  degree                 String?
+  graduationYear         Int?
+  isGraduated            Boolean?
+  location               String?
+  monthlyUsage           Json                @default("{\"resume\": 0, \"interview\": 0, \"coverLetter\": 0, \"voiceInterview\": 0}")
+  plan                   String              @default("FREE")
+  razorpayCustomerId     String?
+  razorpaySubscriptionId String?             @unique
+  userType               String?
+  password               String?
+  bannedAt               DateTime?
+  failedLoginAttempts    Int                 @default(0)
+  lastLogin              DateTime?
+  referralCode           String?
+  weakAreas              String[]
+  learnabilityScore      Float?
+  decisionQuality        Json?
+  actionCount            Int                 @default(0)
+  secretInsight          String?
+  assessment             Assessment[]
+  interviews             Interview[]
+  milestones             CareerMilestone[]
+  coverLetter            CoverLetter[]
+  applications           JobApplication[]
+  jobDrafts              JobDraft[]
+  screenings             JobScreening[]
+  quizPool               QuizPool[]
+  resume                 Resume[]
+  voiceAssessments       VoiceAssessment[]
+  voiceQuestionPool      VoiceQuestionPool[]
+  badges                 VerificationBadge[]
+
+  @@index([email, bannedAt])
+  @@index([plan])
+  @@index([razorpaySubscriptionId])
+}
+
+model JobApplication {
+  id           String   @id @default(cuid())
+  userId       String
+  jobId        String
+  jobTitle     String
+  employerName String
+  employerLogo String?
+  jobApplyLink String?
+  resumeId     String?
+  status       String   @default("applied")
+  appliedAt    DateTime @default(now())
+  analysis     Json?
+  feedback     String?
+  isVetted     Boolean  @default(false)
+  resume       Resume?  @relation(fields: [resumeId], references: [id])
+  user         User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([userId, status])
+  @@index([userId, appliedAt])
+}
+
+model Assessment {
+  id             String   @id @default(cuid())
+  userId         String
+  quizScore      Float
+  questions      Json[]
+  category       String
+  improvementTip String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  interviewType  String   @default("Technical")
+  inputHash      String?
+  user           User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([userId, createdAt])
+}
+
+model VoiceAssessment {
+  id             String   @id @default(cuid())
+  userId         String
+  quizScore      Float
+  questions      Json[]
+  category       String   @default("Voice")
+  improvementTip String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  inputHash      String?
+  user           User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([userId, createdAt])
+}
+
+model Resume {
+  id           String           @id @default(cuid())
+  userId       String
+  content      String
+  atsScore     Float?
+  feedback     String?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  inputHash    String?
+  title        String           @default("My Resume")
+  fileUrl      String?
+  applications JobApplication[]
+  user         User             @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([userId, createdAt])
+}
+
+model CoverLetter {
+  id             String   @id @default(cuid())
+  userId         String
+  content        String
+  jobDescription String?
+  companyName    String
+  jobTitle       String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  inputHash      String?
+  status         String   @default("generated")
+  user           User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([userId, createdAt])
+}
+
+model IndustryInsight {
+  id                String        @id @default(uuid())
+  industry          String
+  salaryRanges      Json[]
+  growthRate        Float
+  demandLevel       DemandLevel
+  topSkills         String[]
+  marketOutlook     MarketOutlook
+  keyTrends         String[]
+  recommendedSkills String[]
+  lastUpdated       DateTime      @default(now())
+  nextUpdate        DateTime
+  location          String
+  salaryCurrency    String        @default("INR")
+  salaryFrequency   String        @default("Lakhs")
+
+  @@unique([industry, location])
+  @@index([industry])
+}
+
+model JobCache {
+  id        String   @id @default(cuid())
+  industry  String
+  location  String
+  data      Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([industry, location])
+  @@index([industry, location])
+}
+
+model QuizPool {
+  id            String   @id @default(cuid())
+  userId        String
+  interviewType String
+  questions     Json
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  user          User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, interviewType])
+}
+
+model VoiceQuestionPool {
+  id        String   @id @default(cuid())
+  userId    String
+  industry  String
+  questions Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, industry])
+}
+
+model ProcessedWebhook {
+  id        String   @id
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+model VerificationCode {
+  id        String   @id @default(uuid())
+  email     String
+  code      String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@unique([email, code])
+  @@index([email, expiresAt])
+}
+
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  email     String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@unique([email, token])
+  @@index([email])
+}
+
+model JobPost {
+  id          String         @id
+  title       String
+  company     String
+  description String?
+  location    String?
+  logo        String?
+  url         String?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  screenings  JobScreening[]
+
+  @@index([company])
+}
+
+model JobScreening {
+  id         String   @id @default(cuid())
+  userId     String
+  jobId      String
+  score      Float
+  passed     Boolean  @default(false)
+  transcript Json?
+  createdAt  DateTime @default(now())
+  job        JobPost  @relation(fields: [jobId], references: [id])
+  user       User     @relation(fields: [userId], references: [id])
+
+  @@index([userId, jobId])
+}
+
+model JobDraft {
+  id          String   @id @default(cuid())
+  userId      String
+  jobId       String
+  jobTitle    String
+  company     String
+  jobUrl      String?
+  matchScore  Float
+  explanation String?
+  status      String   @default("DRAFT")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([userId, status])
+}
+
+model CareerMilestone {
+  id        String   @id @default(cuid())
+  userId    String
+  week      Int
+  title     String
+  content   String
+  status    String   @default("PENDING")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+}
+
+enum DemandLevel {
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum MarketOutlook {
+  POSITIVE
+  NEGATIVE
+  NEUTRAL
+}
+
+model Interview {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deltaScore Float? // Improvement from previous
+  learnabilityScore Float? // AI evaluated 1-100
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model VerificationBadge {
+  id                String   @id @default(cuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  uniqueShareableId String   @unique
+  percentileRank    Float
+  roleNiche         String // e.g., 'HFT-Developer'
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@unique([userId, roleNiche])
+  @@index([userId])
+}

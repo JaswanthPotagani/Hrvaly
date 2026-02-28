@@ -1,0 +1,29 @@
+{
+    "crons": [
+        {
+            "path": "/api/cron/otp-cleanup",
+            "schedule": "0 0 * * *"
+        },
+        {
+            "path": "/api/cron/cleanup-webhooks",
+            "schedule": "0 0 * * *"
+        }
+    ],
+    "rewrites": [
+        {
+            "source": "/api/cron/:path*",
+            "has": [
+                {
+                    "type": "header",
+                    "key": "Authorization",
+                    "value": "Bearer pot@g@ni$@ij@$w@nth203_cron_secret"
+                }
+            ],
+            "destination": "/api/cron/:path*"
+        },
+        {
+            "source": "/api/cron/:path*",
+            "destination": "/401"
+        }
+    ]
+}
