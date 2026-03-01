@@ -92,5 +92,29 @@ class Interview(Base):
     learnabilityScore = Column(Float, nullable=True)
     createdAt = Column(DateTime, default=datetime.datetime.utcnow)
 
-    
+class VoiceAssessment(Base):
+    __tablename__="VoiceAssessment"
 
+    id= Column(String, primary_key=True,default=lambda: str(uuid.uuid4()))
+    userId = Column(String,ForeignKey("User.id"))
+    quizScore = Column(Float)
+    questions = Column (JSON)
+    category = Column(String,default="Voice")
+    improvementTip = Column(String,nullable=True)
+    createdAt = Column(DateTime,default=datetime.datetime.utcnow)
+    updatedAt = Column(DateTime,default=datetime.datetime.utcnow)
+
+    user =  relationship("User" , back_populates="voiceAssessments")
+
+class VoiceAssessmentPool(Base):
+    __tablename__="VoiceQuestionPool"
+
+    id = Column(String, primary_key=True, default=lambda:str(uuid.uuid4()))
+    userId = Column(String, ForeignKey=("User.id"))
+    industry= Column(String)
+    questions = Column(JSON)
+    createdAt =Column(DateTime, default=datetime.datetime.utcnow)
+
+    user = relationship("User", back_populates="voiceQuestionPools")
+
+    
