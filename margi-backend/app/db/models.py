@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String,Float,Boolean,DateTime,JSON,Enum,ForeignKey,Index
+from sqlalchemy import Column, Integer, String,Float,Boolean,DateTime,JSON,Enum,ForeignKey,Index,UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID,ARRAY,JSONB
 from sqlalchemy.orm import relationship
 from .base import Base
@@ -116,5 +116,39 @@ class VoiceAssessmentPool(Base):
     createdAt =Column(DateTime, default=datetime.datetime.utcnow)
 
     user = relationship("User", back_populates="voiceQuestionPools")
+
+class IndustryInsight(Base):
+    __tablename__="IndustryInsights"
+
+    id = Column(String, primary_key=True)
+    industry = Column(String,index=True)
+    salaryRanges = Column(JSON)
+    growthRate = Column(Float)
+    demandLevel = Column(String)
+    topSkills = Column(ARRAY(String))
+    marketOutlook = Column(String)
+    keyTrends = Column(String)
+    recommendedSkills = Column(ARRAY(Strings))
+    lastUpdated = Column(DateTime,default=datetime.datetime.utcnow)
+    nextUpdate = Column(DateTime)
+    location = Column(String)
+    salaryCurrency =  Column(String,default="INR")
+    salaryFrequency = Column(String,default="Lakhs")
+
+    __table_args__= (UniqueConstraint('industry','location',name='_industry_location_uc'),)
+
+
+class JobCache(Base):
+    __tablename__="JobCache"
+
+
+    id = Column(String, primary_key=True)
+    industry = Column(String)
+    location = Column(String)
+    data = Column(JSON)
+    createdAt = Column(DateTime, default=datetime.datetime.utcnow)
+    updatedAt = Column(DateTime, onupdate=datetime.datetime.utcnow)
+
+    __table_args__=(UniqueConstraint('industry' ,'location', name='_job_cache_uc'),)
 
     
