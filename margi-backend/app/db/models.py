@@ -180,5 +180,21 @@ class VerificationBadge(Base):
     user = relationship("User", back_populates="badges")
     __table_args__ = (UniqueConstraint('userId','roleNiche',name='_user_role_niche_uc'),)
 
+class ProcessedWbhook(Base):
+    __tablename__="ProcessedWebhook"
+    id =Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    email = Column(String, index=True)
+    code = Column(String)
+    expiresAt = Column(DateTime)
+    createdAt = Column(DateTime, default=datetime.datetime.utcnow)
+
+class PasswordResetToken(Base):
+    __tablename__="PasswordResetToken"
+    id = Column(String, primary_key=True, default=lambda:str(uuid.uuid4()))
+    email = Column(String, index= True)
+    token = Column(String, unique=True)
+    expiresAt = Column(DateTime)
+    createdAt = Column(DateTime, default=datetime.datetime.utcnow)
+
     
     

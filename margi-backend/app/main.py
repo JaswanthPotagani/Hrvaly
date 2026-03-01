@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from app.db.base import engine
 from app.db import models
-from app.api.v1 import user, resume , applications,dashboard,interview,voice,insights,achievements
+from app.api.v1 import user, resume , applications,dashboard,interview,voice,insights,achievements,admin
 
 app = FastAPI()
 
@@ -12,7 +12,7 @@ app.include_router(interview.router, prefix="/api/v1/interview",tags=["Interview
 app.include_router(voice.router,prefix="/api/v1/voice" , tags=["Voice Interview"])
 app.include_router(insights.router,prefix="/api/v1/insights", tags=["Industry Insights"])
 app.include_router(achievements.router, prefix="/api/v1/achievements",tags=["Achievements"])
-
+app.include_router(admin.router, prefix="/api/v1/admin", tags=["Admin & Security"])
 @app.get("/health")
 def health_check():
     return {"status": "online","database":"connected"}
