@@ -8,7 +8,7 @@ app = FastAPI()
 app.include_router(user.router, prefix="/api/v1/user", tags=["user"])
 app.include_router(resume.router, prefix="/api/v1/resume", tags=["resume"])
 app.include_router(applications.router, prefix="/api/v1/applications", tags=["applications"])
-
+app.include_router(interview.router, prefix="/api/v1/interview",tags=["Interview"])
 
 @app.get("/health")
 def health_check():

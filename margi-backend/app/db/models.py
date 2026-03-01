@@ -62,7 +62,35 @@ class Resume(Base):
 
     user = relationship("User", back_populates="resumes")
 
-    
-        
+
+class Assessment(Base):
+    __tablename__=="Assessment"
+    id = Column(String, ForeignKey("User.id"))
+    quizScore = Column(Float)
+    questions = Column(JSON)
+    category = Column(String)
+    improvementTip = Column(String, nullable=True)
+    interviewType = Column(String, default="Technical")
+    createdAt = Column(DateTime, default=datetime.datetime.utcnow)
+
+    user = relationship("User" , back_populates="assessments")
+
+
+class QuizPool(Base):
+    __tablename__="QuizPool"
+    id = Column(String, primary_key=True)
+    userId = Column(String, ForeignKey("User.id"))
+    interviewType = Column(String)
+    questions = Column(JSON)
+    updatedAt = Column(DateTime, onupdate = datetime.datetime.utcnow)
+
+class Interview(Base):
+    __tablename__ = "Interview"
+    id = Column(String, primary_key = "True")
+    userId = Column(String, ForeignKey("User.id"))
+    deltaScore = Column(Float, nullable=True)
+    learnabilityScore = Column(Float, nullable=True)
+    createdAt = Column(DateTime, default=datetime.datetime.utcnow)
+
     
 
