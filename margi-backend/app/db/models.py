@@ -151,4 +151,34 @@ class JobCache(Base):
 
     __table_args__=(UniqueConstraint('industry' ,'location', name='_job_cache_uc'),)
 
+class CareerMilstone(Base):
+    __tablename__ ="CareerMilstone"
+
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    userId = Column(String,ForeignKey("User.id"))
+    week = Column(Integer)
+    title = Column(String)
+    content = Column(String)
+    status = Column(String, default="PENDING")
+    createdAt=Column(DateTime, default=datetime.datetime.utcnow)
+    updatedAt = Column(DateTime, default=datetime.datetime.utcnow)
+
+    user = relationship("User",back_populates="milestone")
+
+class VerificationBadge(Base):
+
+    __tablename__="VerificationBadge"
+
+    id= Column(String,primary_key=True, default=lambda: str(uuid.uuid4()))
+    userId = Column(String, ForeignKey("User.id"))
+    uniqueShareableId = Column(String , unique=True, index=True)
+    percentileRank = Column(Float)
+    roleNiche = Column(String)
+    createdAt = Column(DateTime, default=datetime.datetime.utcnow)
+    updatedAt = Column(DateTime, default= datetime.datetime.utcnow)
+
+    user = relationship("User", back_populates="badges")
+    __table_args__ = (UniqueConstraint('userId','roleNiche',name='_user_role_niche_uc'),)
+
+    
     

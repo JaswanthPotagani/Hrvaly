@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from app.db.base import engine
 from app.db import models
-from app.api.v1 import user, resume , applications,dashboard,interview,voice,insights
+from app.api.v1 import user, resume , applications,dashboard,interview,voice,insights,achievements
 
 app = FastAPI()
 
@@ -11,7 +11,7 @@ app.include_router(applications.router, prefix="/api/v1/applications", tags=["ap
 app.include_router(interview.router, prefix="/api/v1/interview",tags=["Interview"])
 app.include_router(voice.router,prefix="/api/v1/voice" , tags=["Voice Interview"])
 app.include_router(insights.router,prefix="/api/v1/insights", tags=["Industry Insights"])
-
+app.include_router(achievements.router, prefix="/api/v1/achievements",tags=["Achievements"])
 
 @app.get("/health")
 def health_check():
