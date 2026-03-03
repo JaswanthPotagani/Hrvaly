@@ -1,4 +1,4 @@
-import google.generative as genai
+import google.generativeai as genai
 import os
 import json
 
@@ -6,7 +6,7 @@ async def evaluate_voice_response(responses: list, industry:str):
     """
     Evaluates voice transcripts for technical accuracy, clarity and confidence.
     """
-    model =genai.GenerativeModel('gemini-2.5-flash')
+    model =genai.GenerativeModel('gemini-1.5-flash')
 
     prompt =f"""
 

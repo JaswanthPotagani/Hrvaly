@@ -3,7 +3,7 @@ import os
 import json
 
 async def generate_quiz_pool_ai(industry: str,skills:list, interview_type: str ="Techinical"):
-    model = genai.GenerativeModel('gemini-2.5-flash')
+    model = genai.GenerativeModel('gemini-1.5-flash')
 
     prompt = f"""
     Generate 5 {interview_type} interview questions for a canditate in the {industry} industry.

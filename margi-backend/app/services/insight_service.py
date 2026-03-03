@@ -3,7 +3,7 @@ import os
 import json
 
 async def generativeai_industry_trends(industry:str,location:str):
-    model = genai.GenerativeModel('gemini-2.5-flash-lite')
+    model = genai.GenerativeModel('gemini-1.5-flash')
 
     prompt =f"""
     Provide a market pulse report for the {industry} industry in {location}.

@@ -3,7 +3,7 @@ from typing import Optional
 from jose import jwt
 import os
 
-SECRET_KEY = OS.getenv("NEXTAUTH_SECRET")
+SECRET_KEY = os.getenv("NEXTAUTH_SECRET")
 ALGORITHM = "HS256"
 
 def verify_token(token: str)-> Optional[dict]:

@@ -1,43 +1,36 @@
 import { useState } from "react";
 import { toast } from "sonner";
-import { useSession } from "next-auth/react";
 
-const useFetch = (endpoint, method="GET") => {
-    const [data, setData] = useState(null);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
-    const { data: session } = useSession();
+const useFetch = (cb) => {
+  const [data, setData] = useState(undefined);
+  const [loading, setLoading] = useState(null);
+  const [error, setError] = useState(null);
 
-    const fn = async(payload= null) => {
-        setLoading(true);
-        setError(null);
-        try {
-          const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+  const fn = async (...args) => {
+    setLoading(true);
+    setError(null);
 
-          const response = await fetch(`${baseUrl}${endpoint}`,{
-            method,
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${session?.accessToken}`,
-            },
-            body: method !== "GET" && payload ? JSON.stringify(payload) : null,
-          });
+    try {
+      const response = await cb(...args);
+      setData(response);
+      setError(null);
+      return response;
+    } catch (error) {
+      setError(error);
+      toast.error(error.message || "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-          const result = await response.json();
+  const result = [fn, data, loading, error];
+  result.fn = fn;
+  result.data = data;
+  result.loading = loading;
+  result.error = error;
+  result.setData = setData;
 
-          if(!response.ok) throw new Error(result.detail || "Request failed");
-
-          setData(result);
-          return result;
-        } catch (error) {
-            setError(error);
-            toast.error(error.message || "Something went wrong");
-            return null;
-        } finally {
-            setLoading(false);
-        }
-    };
-    return { fn, data, loading, error, setData };    
+  return result;
 };
 
 export default useFetch;

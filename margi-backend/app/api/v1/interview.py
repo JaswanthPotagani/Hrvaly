@@ -20,7 +20,7 @@ async def init_quiz_pool_worker(user_id: str,industry:str,skills:list,db:Session
 
 @router.post("/start")
 async def start_interview(background_tasks:BackgroundTasks,current_user: models.User =Depends(get_current_user),db: Session = Depends(base.get_db)):
-    background_tasks.add_tasks(
+    background_tasks.add_task(
         init_quiz_pool_worker,
         current_user.id,
         current_user.industry,

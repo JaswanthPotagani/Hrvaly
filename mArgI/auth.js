@@ -8,6 +8,7 @@ import { z } from "zod"
 import { authConfig } from "./auth.config"
 import { checkLoginRateLimit, recordLoginAttempt, resetLoginAttempts } from "@/lib/rate-limit"
 import { loginSchema } from "@/lib/validations"
+import { SignJWT } from "jose";
 
 /**
  * Masks an email for safe logging (e.g. u***@example.com)
@@ -101,7 +102,18 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.accessToken = user.token;
+        const secret = new TextEncoder().encode(process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET);
+        const accessToken = await new SignJWT({ 
+          email: user.email,
+          id: user.id,
+          plan: user.plan
+        })
+          .setProtectedHeader({ alg: 'HS256' })
+          .setIssuedAt()
+          .setExpirationTime('24h')
+          .sign(secret);
+
+        token.accessToken = accessToken;
         token.userId = user.id;
         token.plan = user.plan;
         token.email = user.email;
@@ -111,21 +123,35 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
       
       const REFRESH_WINDOW = 5 * 60 * 1000;
-      const needsRefresh = !token.lastChecked || (Date.now() - token.lastChecked > REFRESH_WINDOW);
+      const needsRefresh = !token.accessToken || !token.lastChecked || (Date.now() - token.lastChecked > REFRESH_WINDOW);
       
       if (needsRefresh && token.userId) {
-        console.log("[AUTH-CALLBACK] Refreshing JWT for user:", token.userId);
-        const dbUser = await db.user.findUnique({
-          where: { id: token.userId },
-          select: { bannedAt: true, plan: true }
-        });
+        console.log("[AUTH-CALLBACK] Refreshing/Signing JWT for user:", token.userId);
+        const [dbUser, secret] = await Promise.all([
+          db.user.findUnique({
+            where: { id: token.userId },
+            select: { bannedAt: true, plan: true, email: true }
+          }),
+          new TextEncoder().encode(process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET)
+        ]);
         
-        if (dbUser?.bannedAt) {
+        if (!dbUser || dbUser.bannedAt) {
           return null;
         }
+
+        const accessToken = await new SignJWT({ 
+          email: dbUser.email,
+          id: token.userId,
+          plan: dbUser.plan
+        })
+          .setProtectedHeader({ alg: 'HS256' })
+          .setIssuedAt()
+          .setExpirationTime('24h')
+          .sign(secret);
         
-        token.plan = dbUser?.plan || token.plan;
-        token.bannedAt = dbUser?.bannedAt;
+        token.accessToken = accessToken;
+        token.plan = dbUser.plan;
+        token.bannedAt = dbUser.bannedAt;
         token.lastChecked = Date.now();
       }
       

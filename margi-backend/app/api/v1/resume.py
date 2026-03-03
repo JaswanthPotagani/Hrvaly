@@ -1,9 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException , BackgroundTasks
 from app.api.deps import get_current_user
-from app.db import models
+from app.db import models, base
 from app.core.worker import process_resume_background
 from sqlalchemy.orm import Session
 import uuid
+import datetime
 
 router = APIRouter()
 
@@ -14,7 +15,7 @@ async def create_resume(data: dict,background_tasks: BackgroundTasks, current_us
         userId=current_user.id,
         content=data["content"],
         title=data.get("title", "My Resume"),
-        createdAt=base.datetime.datetime.utcnow(),
+        createdAt=datetime.datetime.utcnow(),
     )
     db.add(new_resume)
     db.commit()

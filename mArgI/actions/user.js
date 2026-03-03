@@ -8,8 +8,11 @@ async function apiFetch(endpoint, options = {}) {
     const session = await auth();
     if (!session?.accessToken) throw new Error("Unauthorized");
 
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    const targetUrl = `${API_BASE_URL}${endpoint}`;
+    console.log(`[apiFetch] Calling ${targetUrl} with token: ${session.accessToken ? 'Present' : 'MISSING'}`);
+    const response = await fetch(targetUrl, {
         ...options,
+        keepalive: true,
         headers: {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${session.accessToken}`,
@@ -22,9 +25,25 @@ async function apiFetch(endpoint, options = {}) {
     return result;
 }
 
+async function safeApiFetch(endpoint, options = {}) {
+    try {
+        const session = await auth();
+        if (!session?.accessToken) {
+            console.log(`[safeApiFetch] No accessToken found for ${endpoint}`);
+            return { error: "Authentication session expired. Please sign in again." };
+        }
+        return await apiFetch(endpoint, options);
+    } catch (error) {
+        console.error(`[safeApiFetch] Error for ${endpoint}:`, error.message);
+        if (error.cause) console.error(`[safeApiFetch] Error Cause:`, error.cause);
+        return { error: error.message }; 
+    }
+}
+
 export async function getUserOnboardingStatus() {
     try {
-        const user = await apiFetch("/user/me");
+        const user = await safeApiFetch("/user/me");
+        if (!user) return { isOnboarded: false };
         return { isOnboarded: user.onboarded };
     } catch (error) {
         console.error("Error checking onboarding status:", error);
@@ -34,7 +53,7 @@ export async function getUserOnboardingStatus() {
 
 export async function updateUser(data) {
     try {
-        return await apiFetch("/user/update", {
+        return await safeApiFetch("/user/update", {
             method: "POST",
             body: JSON.stringify(data),
         });

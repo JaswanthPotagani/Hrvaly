@@ -37,40 +37,12 @@ async function safeApiFetch(endpoint, options = {}) {
     }
 }
 
-export async function getUserDashboardData() {
+export async function issueVerificationBadge() {
     try {
-        const stats = await safeApiFetch("/dashboard/stats");
-        if (!stats) throw new Error("Unauthorized or user data not found");
-        return {
-            userData: stats,
-            insights: null
-        };
+        return await safeApiFetch("/achievements/badge/issue", {
+            method: "POST",
+        });
     } catch (error) {
-        console.error("Error fetching dashboard data:", error);
-        throw error;
-    }
-}
-
-export async function fetchMarketTrends(user) {
-    try {
-        const trends = await safeApiFetch("/insights/trends");
-        return trends || { trendingRoles: [], salaryData: null };
-    } catch (error) {
-        console.error("Error fetching market trends:", error);
-        return { trendingRoles: [], salaryData: null };
-    }
-}
-
-export async function getUpgradeSkills(user) {
-    try {
-        const result = await safeApiFetch("/insights/skills");
-        if (!result) return { currentStatus: {}, upgradeSkills: [] };
-        return {
-            currentStatus: result.currentStatus || {},
-            upgradeSkills: result.upgradeSkills || []
-        };
-    } catch (error) {
-        console.error("Error fetching upgrade skills:", error);
-        return { currentStatus: {}, upgradeSkills: [] };
+        return { error: error.message };
     }
 }

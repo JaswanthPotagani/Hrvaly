@@ -18,7 +18,7 @@ async def read_user_me(current_user: models.User = Depends(get_current_user)):
         "industry" : current_user.industry,
         "plan" : current_user.plan,
         "skills" : current_user.skills,
-        "onboarded": bool(current_user.industry and current_user.specialization)
+        "onboarded": bool(current_user.industry and current_user.bio)
     }
 
 @router.post("/update")

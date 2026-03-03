@@ -14,11 +14,11 @@ async def razorpay_webhook( request :Request , x_razorpay_signature: str = Heade
 
     event_id = event_data.get("id")
 
-    if db.query(models.ProcessedWbhook).filter_by(id=event_id).first():
+    if db.query(models.ProcessedWebhook).filter_by(id=event_id).first():
         return {"status" : "already_processed"}
 
     
-    new_webhook = models.ProcessedWbhook(id=event_id)
+    new_webhook = models.ProcessedWebhook(id=event_id)
     db.add(new_webhook)
     db.commit()
 

@@ -4,6 +4,7 @@ from app.db import models,base
 from app.services.letter_service import generate_cover_letter
 from sqlalchemy.orm import Session
 import uuid
+import datetime
 
 router = APIRouter()
 
@@ -13,10 +14,10 @@ async def track_application(data:dict, current_user: models.User = Depends(get_c
         id=str(uuid.uuid4()),
         userId = data["jobId"],
         jobId = data["jobId"],
-        jobTile = data["jobTitle"],
+        jobTitle = data["jobTitle"],
         employerName = data["employerName"],
         status="applied",
-        appliedAt = base.datetime.datetime.utcnow()
+        appliedAt = datetime.datetime.utcnow()
     )
     db.add(application)
     db.commit()

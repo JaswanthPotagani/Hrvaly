@@ -18,7 +18,7 @@ import { Loader2 } from "lucide-react";
 import useFetch from "@/app/hooks/use-fetch";
 import { useEffect } from "react";
 import { updateUser } from "@/actions/user";
-import { NICHE_MODES, getNichesForIndustry } from "@/lib/niche-config";
+import { NICHE_MODES } from "@/lib/niche-config";
 
 const OnboardingForm = ({industries}) => {
     const [selectedIndustry,setSelectedIndustry] = useState(null);
@@ -41,13 +41,21 @@ const OnboardingForm = ({industries}) => {
         try {
             const formattedIndustry = `${values.industry}-${values.subIndustry.toLowerCase().replace(/ /g,"-")}`;
             
-            await updateUserFn({
+            const result = await updateUserFn({
                ...values,
                industry:formattedIndustry,
-               specialization: values.specialization,
             });
+
+            if (result?.success) {
+                toast.success("Profile updated successfully");
+                router.push("/dashboard");
+                router.refresh();
+            } else if (result?.error) {
+                toast.error(result.error);
+            }
         } catch (error) {
             console.error("Onboarding failed",error);
+            toast.error("An unexpected error occurred. Please try again.");
         }
     };
 
@@ -71,7 +79,6 @@ const OnboardingForm = ({industries}) => {
     const watchDegree = watch("degree");
     const watchIsGraduated = watch("isGraduated");
     const watchCurrentYear = watch("currentYear");
-    const watchSpecialization = watch("specialization");
     
     // Handle user type change
     const handleUserTypeChange = (value) => {
@@ -318,30 +325,7 @@ const OnboardingForm = ({industries}) => {
                                 {errors.subIndustry && (<p className="text-red-500 text-sm">{errors.subIndustry.message}</p>)}
                             </div>)}
 
-                            {watchSubIndustry && (
-                                <div className="space-y-2">
-                                    <Label htmlFor="specialization">Technical Niche / Specialization (Optional)</Label>
-                                    <Select 
-                                        value={watchSpecialization || "none"}
-                                        onValueChange={(value) => setValue("specialization", value === "none" ? "" : value)}
-                                    >
-                                        <SelectTrigger id="specialization">
-                                            <SelectValue placeholder="Select a niche mode" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="none">General / None</SelectItem>
-                                            {getNichesForIndustry(watchIndustry, watchSubIndustry).map((niche) => (
-                                                <SelectItem key={niche.id} value={niche.id}>
-                                                    {niche.label}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    <p className="text-[10px] text-muted-foreground italic">
-                                        Selecting a niche activates &quot;Vertical Targeting&quot; AI for 10x deeper technical advice.
-                                    </p>
-                                </div>
-                            )}
+
 
                         <div className="space-y-2">
                             <Label htmlFor="location">Country / Location *</Label>

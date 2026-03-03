@@ -18,7 +18,7 @@ class MarketOutlook(enum.Enum):
     NEUTRAL = "NEUTRAL"
 
 class User(Base):
-    __tablename__ = "users"
+    __tablename__ = "User"
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     email = Column(String, unique=True, index=True , nullable=False)
     name = Column(String)
@@ -42,7 +42,7 @@ class User(Base):
     resumes = relationship("Resume", back_populates="user")
     voiceAssessments = relationship("VoiceAssessment", back_populates="user")
     voiceQuestionPools = relationship("VoiceAssessmentPool", back_populates="user")
-    milestone = relationship("CareerMilstone", back_populates="user")
+    milestones = relationship("CareerMilestone", back_populates="user")
     badges = relationship("VerificationBadge", back_populates="user")
     jobApplications = relationship("JobApplication", back_populates="user")
 
@@ -50,7 +50,7 @@ class User(Base):
 class JobApplication(Base):
     __tablename__ = "JobApplication"
     id = Column(String, primary_key=True)
-    userId = Column(String, ForeignKey("users.id"))
+    userId = Column(String, ForeignKey("User.id"))
     jobTitle = Column(String)
     employerName = Column(String)
     status = Column(String)
@@ -62,7 +62,7 @@ class Resume(Base):
     __tablename__ = "Resume"
 
     id = Column(String, primary_key=True)
-    userId = Column(String, ForeignKey("users.id"))
+    userId = Column(String, ForeignKey("User.id"))
     content = Column(String)
     atsScore = Column(Float)
     createdAt = Column(DateTime, default=datetime.datetime.utcnow)
@@ -73,7 +73,7 @@ class Resume(Base):
 class Assessment(Base):
     __tablename__ = "Assessment"
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    userId = Column(String, ForeignKey("users.id"))
+    userId = Column(String, ForeignKey("User.id"))
     quizScore = Column(Float)
     questions = Column(JSON)
     category = Column(String)
@@ -87,15 +87,15 @@ class Assessment(Base):
 class QuizPool(Base):
     __tablename__="QuizPool"
     id = Column(String, primary_key=True)
-    userId = Column(String, ForeignKey("users.id"))
+    userId = Column(String, ForeignKey("User.id"))
     interviewType = Column(String)
     questions = Column(JSON)
     updatedAt = Column(DateTime, onupdate = datetime.datetime.utcnow)
 
 class Interview(Base):
     __tablename__ = "Interview"
-    id = Column(String, primary_key = "True")
-    userId = Column(String, ForeignKey("users.id"))
+    id = Column(String, primary_key=True)
+    userId = Column(String, ForeignKey("User.id"))
     deltaScore = Column(Float, nullable=True)
     learnabilityScore = Column(Float, nullable=True)
     createdAt = Column(DateTime, default=datetime.datetime.utcnow)
@@ -118,7 +118,7 @@ class VoiceAssessmentPool(Base):
     __tablename__="VoiceQuestionPool"
 
     id = Column(String, primary_key=True, default=lambda:str(uuid.uuid4()))
-    userId = Column(String, ForeignKey("users.id"))
+    userId = Column(String, ForeignKey("User.id"))
     industry= Column(String)
     questions = Column(JSON)
     createdAt =Column(DateTime, default=datetime.datetime.utcnow)
@@ -159,11 +159,11 @@ class JobCache(Base):
 
     __table_args__=(UniqueConstraint('industry' ,'location', name='_job_cache_uc'),)
 
-class CareerMilstone(Base):
-    __tablename__ ="CareerMilstone"
+class CareerMilestone(Base):
+    __tablename__ ="CareerMilestone"
 
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    userId = Column(String,ForeignKey("users.id"))
+    userId = Column(String,ForeignKey("User.id"))
     week = Column(Integer)
     title = Column(String)
     content = Column(String)
@@ -171,14 +171,14 @@ class CareerMilstone(Base):
     createdAt=Column(DateTime, default=datetime.datetime.utcnow)
     updatedAt = Column(DateTime, default=datetime.datetime.utcnow)
 
-    user = relationship("User",back_populates="milestone")
+    user = relationship("User",back_populates="milestones")
 
 class VerificationBadge(Base):
 
     __tablename__="VerificationBadge"
 
     id= Column(String,primary_key=True, default=lambda: str(uuid.uuid4()))
-    userId = Column(String, ForeignKey("users.id"))
+    userId = Column(String, ForeignKey("User.id"))
     uniqueShareableId = Column(String , unique=True, index=True)
     percentileRank = Column(Float)
     roleNiche = Column(String)
@@ -188,7 +188,7 @@ class VerificationBadge(Base):
     user = relationship("User", back_populates="badges")
     __table_args__ = (UniqueConstraint('userId','roleNiche',name='_user_role_niche_uc'),)
 
-class ProcessedWbhook(Base):
+class ProcessedWebhook(Base):
     __tablename__="ProcessedWebhook"
     id =Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     email = Column(String, index=True)
