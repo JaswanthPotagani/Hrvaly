@@ -2,26 +2,25 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { useSession } from "next-auth/react";
 
-const useFetch = (url, method="GET") => {
+const useFetch = (endpoint, method="GET") => {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const { data: session } = useSession();
 
-    const fn = async(...args) => {
+    const fn = async(payload= null) => {
         setLoading(true);
         setError(null);
         try {
           const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-          const fullUrl = typeof url === "function" ? url(...args) : url;
 
-          const response = await fetch(`${baseUrl}${fullUrl}`,{
+          const response = await fetch(`${baseUrl}${endpoint}`,{
             method,
             headers: {
                 "Content-Type": "application/json",
-                Authorization: `Bearer ${session?.accessToken}`,
+                "Authorization": `Bearer ${session?.accessToken}`,
             },
-            body: method !== "GET" ? JSON.stringify(args[0]) : null,
+            body: method !== "GET" && payload ? JSON.stringify(payload) : null,
           });
 
           const result = await response.json();
@@ -33,10 +32,11 @@ const useFetch = (url, method="GET") => {
         } catch (error) {
             setError(error);
             toast.error(error.message || "Something went wrong");
+            return null;
         } finally {
             setLoading(false);
         }
-    } 
+    };
     return { fn, data, loading, error, setData };    
 };
 
