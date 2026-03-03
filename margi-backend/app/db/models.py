@@ -126,7 +126,7 @@ class VoiceAssessmentPool(Base):
     user = relationship("User", back_populates="voiceQuestionPools")
 
 class IndustryInsight(Base):
-    __tablename__="IndustryInsights"
+    __tablename__="IndustryInsight"
 
     id = Column(String, primary_key=True)
     industry = Column(String,index=True)
@@ -135,7 +135,7 @@ class IndustryInsight(Base):
     demandLevel = Column(String)
     topSkills = Column(ARRAY(String))
     marketOutlook = Column(String)
-    keyTrends = Column(String)
+    keyTrends = Column(ARRAY(String))
     recommendedSkills = Column(ARRAY(String))
     lastUpdated = Column(DateTime,default=datetime.datetime.utcnow)
     nextUpdate = Column(DateTime)

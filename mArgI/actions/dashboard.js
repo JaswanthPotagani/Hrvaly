@@ -40,10 +40,18 @@ async function safeApiFetch(endpoint, options = {}) {
 export async function getUserDashboardData() {
     try {
         const stats = await safeApiFetch("/dashboard/stats");
-        if (!stats) throw new Error("Unauthorized or user data not found");
+        if (!stats || stats.error) throw new Error(stats?.error || "Unauthorized or user data not found");
+        
+        // Fetch full industry pulse data for the summary sections
+        let insights = null;
+        if (stats.industry) {
+            console.log(`[getUserDashboardData] Fetching insights for industry: ${stats.industry}`);
+            insights = await safeApiFetch(`/insights/${encodeURIComponent(stats.industry)}`);
+        }
+
         return {
             userData: stats,
-            insights: null
+            insights: insights && !insights.error ? insights : null
         };
     } catch (error) {
         console.error("Error fetching dashboard data:", error);

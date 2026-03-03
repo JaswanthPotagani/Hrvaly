@@ -9,7 +9,7 @@ async def analyse_resume_with_ai(content: str, industry:str):
     Uses Gemini to analyse resuem content and return an ATS score and feedback.
     """
 
-    model = genai.GenerativeModel("gemini-2.0-flash-exp")
+    model = genai.GenerativeModel("gemini-1.5-flash")
     
     prompt= f"""
     Analyse the following resume for a position in the {industry} industry.
