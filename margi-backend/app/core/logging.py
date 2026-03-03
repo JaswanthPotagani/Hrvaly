@@ -1,4 +1,7 @@
 from fastapi import BackgroundTasks
+from sqlalchemy.orm import Session
+from app.db import models
+import datetime
 
 def update_user_activity(db: Session, user_id:  str):
     user = db.query(models.User).filter_by(id=user_id).first()

@@ -34,10 +34,17 @@ class User(Base):
     college = Column(String)
     plan = Column(String,default="FREE")
     monthlyUsage = Column(JSONB,default={"resume":0,"coverLetter":0,"interview":0,"voiceInterview":0})
-
+    learnabilityScore = Column(Float, default=0.0)
+    actionCount = Column(Integer, default=0)
+    lastLogin = Column(DateTime, default=datetime.datetime.utcnow)
 
     assessments = relationship("Assessment", back_populates="user")
     resumes = relationship("Resume", back_populates="user")
+    voiceAssessments = relationship("VoiceAssessment", back_populates="user")
+    voiceQuestionPools = relationship("VoiceAssessmentPool", back_populates="user")
+    milestone = relationship("CareerMilstone", back_populates="user")
+    badges = relationship("VerificationBadge", back_populates="user")
+    jobApplications = relationship("JobApplication", back_populates="user")
 
 
 class JobApplication(Base):
@@ -64,8 +71,9 @@ class Resume(Base):
 
 
 class Assessment(Base):
-    __tablename__=="Assessment"
-    id = Column(String, ForeignKey("User.id"))
+    __tablename__ = "Assessment"
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    userId = Column(String, ForeignKey("users.id"))
     quizScore = Column(Float)
     questions = Column(JSON)
     category = Column(String)
@@ -79,7 +87,7 @@ class Assessment(Base):
 class QuizPool(Base):
     __tablename__="QuizPool"
     id = Column(String, primary_key=True)
-    userId = Column(String, ForeignKey("User.id"))
+    userId = Column(String, ForeignKey("users.id"))
     interviewType = Column(String)
     questions = Column(JSON)
     updatedAt = Column(DateTime, onupdate = datetime.datetime.utcnow)
@@ -87,7 +95,7 @@ class QuizPool(Base):
 class Interview(Base):
     __tablename__ = "Interview"
     id = Column(String, primary_key = "True")
-    userId = Column(String, ForeignKey("User.id"))
+    userId = Column(String, ForeignKey("users.id"))
     deltaScore = Column(Float, nullable=True)
     learnabilityScore = Column(Float, nullable=True)
     createdAt = Column(DateTime, default=datetime.datetime.utcnow)
@@ -110,7 +118,7 @@ class VoiceAssessmentPool(Base):
     __tablename__="VoiceQuestionPool"
 
     id = Column(String, primary_key=True, default=lambda:str(uuid.uuid4()))
-    userId = Column(String, ForeignKey=("User.id"))
+    userId = Column(String, ForeignKey("users.id"))
     industry= Column(String)
     questions = Column(JSON)
     createdAt =Column(DateTime, default=datetime.datetime.utcnow)
@@ -128,7 +136,7 @@ class IndustryInsight(Base):
     topSkills = Column(ARRAY(String))
     marketOutlook = Column(String)
     keyTrends = Column(String)
-    recommendedSkills = Column(ARRAY(Strings))
+    recommendedSkills = Column(ARRAY(String))
     lastUpdated = Column(DateTime,default=datetime.datetime.utcnow)
     nextUpdate = Column(DateTime)
     location = Column(String)
@@ -155,7 +163,7 @@ class CareerMilstone(Base):
     __tablename__ ="CareerMilstone"
 
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    userId = Column(String,ForeignKey("User.id"))
+    userId = Column(String,ForeignKey("users.id"))
     week = Column(Integer)
     title = Column(String)
     content = Column(String)
@@ -170,7 +178,7 @@ class VerificationBadge(Base):
     __tablename__="VerificationBadge"
 
     id= Column(String,primary_key=True, default=lambda: str(uuid.uuid4()))
-    userId = Column(String, ForeignKey("User.id"))
+    userId = Column(String, ForeignKey("users.id"))
     uniqueShareableId = Column(String , unique=True, index=True)
     percentileRank = Column(Float)
     roleNiche = Column(String)

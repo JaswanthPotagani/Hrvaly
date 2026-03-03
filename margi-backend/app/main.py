@@ -1,13 +1,22 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 import time
 from fastapi.middleware.gzip import GZipMiddleware
 from app.db.base import engine
 from app.db import models
 from app.api.v1 import user, resume , applications,dashboard,interview,voice,insights,achievements,admin,payments,webhooks
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
-app.add_middleware(GZipMiddleware, minimun_size=500)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["https://your-nextjs-app.com" ,"http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods = ["*"],
+    allow_headers=["*"],
+)
+
+app.add_middleware(GZipMiddleware, minimum_size=500)
 
 app.include_router(user.router, prefix="/api/v1/user", tags=["user"])
 app.include_router(resume.router, prefix="/api/v1/resume", tags=["resume"])
@@ -28,6 +37,10 @@ async def add_process_time_header(request: Request, call_next):
     process_time = time.time() - start_time
     response.headers["X-Process-Time"] =  str(process_time)
     return response
+
+@app.middleware("http")
+async def ban_check_middleware(request, call_next):
+    return await call_next(request)
 
 @app.get("/health")
 def health_check():

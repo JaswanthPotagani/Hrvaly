@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest",
-    "test:e2e": "node scripts/reset-test-user.js && playwright test",
+    "test:e2e:fastapi": "NEXT_PUBLIC_API_BASE_URL=http://localhost:8000/api/v1 playwright test",
     "postinstall": "prisma generate"
   },
   "dependencies": {

@@ -12,7 +12,7 @@ async def process_voice_result_worker(assessment_id: str, response: list, indust
     result = await evaluate_voice_response(response,industry)
 
 
-    assesment = db.query(mmodels.VoiceAssessment).filter(models.VoiceAssessment.id==assessment_id).first()
+    assesment = db.query(models.VoiceAssessment).filter(models.VoiceAssessment.id==assessment_id).first()
     if assesment:
         assesment.quizScore=result["score"]
         assesment.improvementTip =  result["tips"]

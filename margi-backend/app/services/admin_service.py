@@ -15,7 +15,7 @@ def check_user_access(user: models.User):
 
     return True, None
 
-def log_webhook(db: Session, wenhool_id:  str):
+def log_webhook(db: Session, webhook_id: str):
     """
     Prevents duplicate processing of webhooks (Idempotency).
     """

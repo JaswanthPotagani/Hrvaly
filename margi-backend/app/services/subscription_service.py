@@ -10,7 +10,7 @@ def create_razorpay_order(amount: int, currency: str = "INR"):
     Creates a new order in Razorpay
     """
 
-    date ={
+    data ={
         "amount": amount * 100,
         "currency": currency,
         "receipt": "receipt_order_1"
