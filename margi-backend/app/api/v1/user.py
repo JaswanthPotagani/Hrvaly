@@ -30,10 +30,14 @@ async def update_user(
     """
     Updates user profile data (Onboarding)
     """
-    for key, value in data.items():
-        if hasattr(current_user, key):
-            setattr(current_user, key, value)
+    # Merge current_user into the active session
+    user = db.merge(current_user)
     
-    current_user.updatedAt = datetime.datetime.utcnow()
+    for key, value in data.items():
+        if hasattr(user, key):
+            setattr(user, key, value)
+    
+    user.updatedAt = datetime.datetime.utcnow()
     db.commit()
+    db.refresh(user)
     return {"success": True}

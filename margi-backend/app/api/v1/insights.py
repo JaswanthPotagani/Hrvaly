@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends , BackgroundTasks
+from fastapi import APIRouter, Depends , BackgroundTasks, HTTPException
 from app.api.deps import get_current_user
 from app.db import models,base
 from app.services.insight_service import generativeai_industry_trends
@@ -12,21 +12,40 @@ router = APIRouter()
 
 @router.get("/trends")
 async def get_industry_trends(current_user: models.User = Depends(get_current_user), db:Session = Depends(base.get_db)):
-    # Simple redirect to the main industry insight logic using the user's industry
-    data = await get_market_pulse(industry=current_user.industry, location="Global", current_user=current_user, db=db)
+    # Pass specialization to get_market_pulse
+    data = await get_market_pulse(
+        industry=current_user.industry, 
+        location="Global", 
+        specialization=current_user.specialization,
+        current_user=current_user, 
+        db=db
+    )
     if "message" in data: return data
     
-    # Map to frontend expected format
-    print(f"[DEBUG] Trends Data for {current_user.industry}: {data.get('keyTrends')}")
+    # Fix the mapping: Trending Roles should be the names of the roles from salaryRanges
+    salary_ranges = data.get("salaryRanges", [])
+    trending_roles = [r.get("role") for r in salary_ranges if r.get("role")]
+    
+    # Fallback if no roles found (shouldn't happen with updated prompt)
+    if not trending_roles:
+        trending_roles = data.get("keyTrends", [])
+
+    print(f"[DEBUG] Trending Roles for {current_user.industry}: {trending_roles}")
     return {
-        "trendingRoles": data.get("keyTrends", []),
-        "salaryData": data.get("salaryRanges", [])
+        "trendingRoles": trending_roles,
+        "salaryData": salary_ranges[0] if salary_ranges else None
     }
 
 @router.get("/skills")
 async def get_industry_skills(current_user: models.User = Depends(get_current_user), db:Session = Depends(base.get_db)):
-    # Trigger generation if missing
-    data = await get_market_pulse(industry=current_user.industry, location="Global", current_user=current_user, db=db)
+    # Trigger generation with specialization
+    data = await get_market_pulse(
+        industry=current_user.industry, 
+        location="Global", 
+        specialization=current_user.specialization,
+        current_user=current_user, 
+        db=db
+    )
     if "message" in data: return data
 
     print(f"[DEBUG] Skills Data for {current_user.industry}: {data.get('recommendedSkills')}")
@@ -41,8 +60,9 @@ async def get_industry_skills(current_user: models.User = Depends(get_current_us
     }
 
 @router.get("/{industry}")
-async def get_market_pulse(industry:str, location:str = "Global",current_user: models.User = Depends(get_current_user), db:Session = Depends(base.get_db)):
-    cache_key =f"insight:{industry}:{location}"
+async def get_market_pulse(industry:str, location:str = "Global", specialization: str = None, current_user: models.User = Depends(get_current_user), db:Session = Depends(base.get_db)):
+    # Unique cache key per industry + specialization
+    cache_key = f"insight:{industry}:{specialization or 'general'}:{location}"
 
     cached = await redis_client.get(cache_key)
     if cached:
@@ -55,7 +75,7 @@ async def get_market_pulse(industry:str, location:str = "Global",current_user: m
         # Trigger AI generation on the fly
         print(f"[DEBUG] insight missing, triggering AI for {industry}")
         try:
-            ai_data = await generativeai_industry_trends(industry, location)
+            ai_data = await generativeai_industry_trends(industry, location, specialization)
             print(f"[DEBUG] AI data received: {ai_data.keys()}")
             
             # Save to DB
@@ -80,7 +100,7 @@ async def get_market_pulse(industry:str, location:str = "Global",current_user: m
             insight = new_insight
         except Exception as e:
             print(f"Error generating insight: {e}")
-            return {"message": "Insight generation failed. Please try again later."}
+            raise HTTPException(status_code=500, detail=f"Insight generation failed: {str(e)}")
 
     data = {c.name: getattr(insight, c.name) for c in insight.__table__.columns}
     await redis_client.setex(cache_key, 3600, json.dumps(data, default=str))

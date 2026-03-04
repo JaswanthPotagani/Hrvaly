@@ -141,7 +141,7 @@ const DashboardView = ({ userData, insights, marketTrends, careerStatus, standar
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                                     <div className="p-2 sm:p-3 bg-muted/20 rounded-lg">
                                         <p className="text-xs text-muted-foreground mb-1">Demand Level</p>
-                                        <p className="text-sm sm:text-base font-semibold capitalize">{insights.demandLevel.toLowerCase()}</p>
+                                        <p className="text-sm sm:text-base font-semibold capitalize">{insights.demandLevel?.toLowerCase() || "N/A"}</p>
                                     </div>
                                     <div className="p-2 sm:p-3 bg-muted/20 rounded-lg">
                                         <p className="text-xs text-muted-foreground mb-1">Growth Rate</p>
@@ -153,7 +153,7 @@ const DashboardView = ({ userData, insights, marketTrends, careerStatus, standar
                                     </div>
                                      <div className="p-2 sm:p-3 bg-muted/20 rounded-lg">
                                         <p className="text-xs text-muted-foreground mb-1">Next Update</p>
-                                        <p className="text-sm sm:text-base font-semibold">{formatDistanceToNow(new Date(insights.nextUpdate), { addSuffix: true })}</p>
+                                        <p className="text-sm sm:text-base font-semibold">{insights.nextUpdate ? formatDistanceToNow(new Date(insights.nextUpdate), { addSuffix: true }) : "N/A"}</p>
                                     </div>
                                 </div>
                                 <div className="mt-4 flex flex-wrap gap-2">

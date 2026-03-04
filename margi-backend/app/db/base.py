@@ -16,8 +16,13 @@ Base = declarative_base()
 
 
 def get_db():
+    print("[DB] Creating session...")
     db = SessionLocal()
     try:
         yield db
+    except Exception as e:
+        print(f"[DB] Session error: {e}")
+        raise e
     finally:
+        print("[DB] Closing session.")
         db.close()

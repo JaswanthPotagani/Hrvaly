@@ -1,6 +1,7 @@
 "use server"
 
-import { auth } from "@/auth";
+import { auth, signIn } from "@/auth";
+import { AuthError } from "next-auth";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -63,8 +64,23 @@ export async function updateUser(data) {
 }
 
 export async function loginUser(credentials) {
-    // Note: Sign-in is handled by auth.js Credentials provider.
-    // This wrapper is for UI compatibility if needed by existing components.
-    // In many setups, the UI calls signIn('credentials', ...) from next-auth/react directly.
-    return { success: true }; 
+    try {
+        await signIn("credentials", {
+          ...credentials,
+          redirect: false,
+        });
+        return { success: true };
+    } catch (error) {
+        if (error instanceof AuthError) {
+            switch (error.type) {
+                case "CredentialsSignin":
+                    return { error: "Invalid credentials or account banned." };
+                default:
+                    return { error: "Something went wrong during sign-in." };
+            }
+        }
+        // Next.js redirect errors should be allowed to bubble up if we didn't use redirect: false
+        // but since we used redirect: false, we handle it here.
+        return { error: error.message || "Failed to sign in" };
+    }
 }
