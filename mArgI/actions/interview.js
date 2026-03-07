@@ -70,3 +70,39 @@ export async function saveQuizResult(quizData, answers, score, type) {
         })
     });
 }
+
+// ── Voice Interview Actions ──────────────────────────────────────────────────
+
+export async function startVoiceInterview() {
+    return await apiFetch("/voice/start", { method: "POST" });
+}
+
+export async function generateVoiceResponse(history, userResponse) {
+    return await apiFetch("/voice/turn", {
+        method: "POST",
+        body: JSON.stringify({ history, userResponse })
+    });
+}
+
+export async function saveVoiceAssessment(result, inputHash) {
+    try {
+        return await apiFetch("/voice/save", {
+            method: "POST",
+            body: JSON.stringify({ result, inputHash })
+        });
+    } catch (error) {
+        console.error("Failed to save voice assessment:", error);
+        return null;
+    }
+}
+
+export async function getVoiceAssessments() {
+    try {
+        const result = await apiFetch("/voice/assessments");
+        return result || [];
+    } catch (error) {
+        console.error("Error fetching voice assessments:", error);
+        return [];
+    }
+}
+

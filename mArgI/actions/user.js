@@ -52,6 +52,16 @@ export async function getUserOnboardingStatus() {
     }
 }
 
+export async function getUserData() {
+    try {
+        const user = await safeApiFetch("/user/me");
+        return user || null;
+    } catch (error) {
+        console.error("Error fetching user data:", error);
+        return null;
+    }
+}
+
 export async function updateUser(data) {
     try {
         return await safeApiFetch("/user/update", {
