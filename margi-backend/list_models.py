@@ -5,19 +5,16 @@ from dotenv import load_dotenv
 load_dotenv()
 api_key = os.getenv("GEMINI_API_KEY")
 
-print(f"Library Version: {genai.__version__}")
-print(f"API Key Start: {api_key[:10] if api_key else 'None'}")
-
 if not api_key:
     print("ERROR: GEMINI_API_KEY not found in .env")
-else:
-    genai.configure(api_key=api_key)
-    print("Listing all models...")
-    try:
-        models = list(genai.list_models())
-        if not models:
-            print("No models found!")
-        for m in models:
-            print(f"- {m.name} (Methods: {m.supported_generation_methods})")
-    except Exception as e:
-        print(f"CRITICAL ERROR during list_models: {e}")
+    exit(1)
+
+genai.configure(api_key=api_key)
+
+try:
+    print("Listing available models:")
+    for m in genai.list_models():
+        if 'generateContent' in m.supported_generation_methods:
+            print(f"ID: {m.name}, DisplayName: {m.display_name}")
+except Exception as e:
+    print(f"FAILED: {e}")

@@ -6,26 +6,29 @@ services:
       context: .
       dockerfile: Dockerfile
     restart: always
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
     environment:
       - DATABASE_URL=${DATABASE_URL}
       - REDIS_URL=redis://redis:6379/0
       - GEMINI_API_KEY=${GEMINI_API_KEY}
-    deploy:
-      resources:
-        limits:
-          cpus: '1'
-          memory: 1G
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8000/health" ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+    networks:
+      - default
 
   redis:
     image: redis:7-alpine
     command: redis-server --save 60 1 --loglevel warning
+    networks:
+      - default
     volumes:
       - redis_data:/data
+
+networks:
+  default:
+    name: margi-network
 
 volumes:
   redis_data:

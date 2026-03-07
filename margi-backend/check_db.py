@@ -1,19 +1,12 @@
 import asyncio
-from app.db import base, models
-from sqlalchemy.orm import Session
-import os
+from app.db.base import engine
+from sqlalchemy import inspect
 
-async def check():
-    db = next(base.get_db())
-    users = db.query(models.User).all()
-    print(f"Total Users: {len(users)}")
-    for user in users:
-        print(f"User: {user.email}, Industry: {user.industry}, Bio: {user.bio}")
-    
-    insights = db.query(models.IndustryInsight).all()
-    print(f"Total Insights: {len(insights)}")
-    for insight in insights:
-        print(f"Insight ID: {insight.id}, Industry: {insight.industry}, Trends: {insight.keyTrends}")
+def main():
+    inspector = inspect(engine)
+    columns = inspector.get_columns('Assessment')
+    for c in columns:
+        print(f"{c['name']}: {c['type']}")
 
 if __name__ == "__main__":
-    asyncio.run(check())
+    main()

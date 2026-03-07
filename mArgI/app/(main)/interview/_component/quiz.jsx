@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -49,18 +49,40 @@ export default function Quiz() {
   const [streak, setStreak] = useState(0);
   const [timeTaken, setTimeTaken] = useState(0); // In seconds
   const [planLimitReached, setPlanLimitReached] = useState(false);
+  
+  // Prevent the 404→start infinite loop: track if batch was already triggered
+  const generationAttempted = useRef(false);
 
-  const [generateQuizFn, quizData, generatingQuiz, quizError, setQuizData] = useFetch(generateQuiz);
-  const [saveQuizResultFn, resultData, savingResult, , setResultData] = useFetch(saveQuizResult);
-  const [batchGenerateFn, batchData, isBatching, batchError] = useFetch(generateAllQuizzes);
+  const {
+    fn: generateQuizFn, 
+    data: quizData, 
+    loading: generatingQuiz, 
+    error: quizError, 
+    setData: setQuizData
+  } = useFetch(generateQuiz);
 
-  // Trigger batch generation if pool is empty
+  const {
+    fn: saveQuizResultFn, 
+    data: resultData, 
+    loading: savingResult, 
+    setData: setResultData
+  } = useFetch(saveQuizResult);
+
+  const {
+    fn: batchGenerateFn, 
+    data: batchData, 
+    loading: isBatching, 
+    error: batchError
+  } = useFetch(generateAllQuizzes);
+
+  // Trigger batch generation ONLY ONCE if pool is empty
   useEffect(() => {
-    if (quizData === null && selectedType && !generatingQuiz && !isBatching) {
+    if (quizData === null && selectedType && !generatingQuiz && !isBatching && !generationAttempted.current) {
+      generationAttempted.current = true;
       batchGenerateFn();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [quizData, selectedType, generatingQuiz, isBatching]);
+  }, [quizData, selectedType]);
 
   // Once batching is successful, re-fetch the specific quiz
   useEffect(() => {
@@ -68,12 +90,15 @@ export default function Quiz() {
       generateQuizFn(selectedType);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [batchData, selectedType]);
+  }, [batchData]);
 
   useEffect(() => {
     if (quizError) {
       if (quizError.message === "PLAN_LIMIT_EXCEEDED") {
         setPlanLimitReached(true);
+      } else if (quizError.message?.includes("404") || quizError.message?.includes("not found")) {
+        // Don't show error for 404 - pool not ready yet, batch generation is handling it
+        console.log("[Quiz] Pool not ready yet, waiting for generation...");
       } else {
         toast.error(quizError.message || "Failed to load quiz");
       }
@@ -181,7 +206,7 @@ export default function Quiz() {
     );
   }
 
-  if (!quizData) {
+  if (!quizData || !Array.isArray(quizData) || quizData.length === 0) {
     return (
       <div className="w-full max-w-4xl mx-auto space-y-8 px-4">
         <div className="text-center space-y-4">
@@ -261,6 +286,15 @@ export default function Quiz() {
   }
 
   const question = quizData[currentQuestion];
+
+  if (!question) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px]">
+        <p className="text-muted-foreground">Question not found. Please try restarting the quiz.</p>
+        <Button onClick={startNewQuiz} className="mt-4">Back to Selection</Button>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full max-w-4xl mx-auto space-y-8 px-4">
